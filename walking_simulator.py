@@ -118,7 +118,7 @@ class ninja:
         self.y = min_y
         self.width = 40
         self.height = 60
-        self.frame = 0
+        self.frame = -10
         self.hitbox = (self.x, self.y, self.width, self.height)
         self.sprites = [pygame.image.load("./images/ninja_event/ninja1.png").convert_alpha(),
                         pygame.image.load("./images/ninja_event/ninja2.png").convert_alpha(),
@@ -315,12 +315,18 @@ def move_player(player, ground, framerate):
     player.y -= player.y_movement
 
     # checkt of de speler ctrl indrukt om te schieten
-    if 63 < keymod < 67 and player.gun_cooldown >= 120:
+    if 63 < keymod < 67 and player.gun_cooldown >= 120 and not player.shielding:
         player.shoot = True
         player.gun_cooldown = 0
+    # als de gun cooldown kleiner is dan 120 blijft die de gun_cooldown erbij doen zodat je later weer kan schieten
     elif player.gun_cooldown < 120:
         player.gun_cooldown += 1
         player.shoot = False
+
+    # voor de eerste 18 frames van de cooldown sta je stil
+    if player.gun_cooldown < 18:
+        player.x_movement = 0
+
 
     # de progress word berekent door de functie movement()
     player.progress += movement(player.x_movement, player.progress)
@@ -353,7 +359,7 @@ def display_player(player, frame):
     elif player.x_movement < 0:
         screen.blit(player.sprites[frame+4], (player.hitbox[0]-player.hitbox[2]/2, player.hitbox[1]))
     # voor de startpositie heb je geen movement dus moest deze nog toevoegen
-    else:
+    elif player.gun_cooldown >= 17:
         screen.blit(player.sprites[0], (player.x-player.width/2, player.y))
 
     if player.shielding:
@@ -366,6 +372,9 @@ def display_player(player, frame):
         player_center = (int(player.x + player.width / 2), int(player.y + player.height / 2))
         screen.blit(player.event_sprites[0], (player.x-player.width/2, player.y))
         screen.blit(shield_surface, (player_center[0]-25, player_center[1]-25))
+    elif player.gun_cooldown < 18:
+        frame = player.gun_cooldown // 12
+        screen.blit(player.event_sprites[frame+1], (player.x-7, player.y))
 
 
 # laat zien hoeveel je kan sprinten
@@ -701,7 +710,7 @@ while True:
 
         # voor random events
         if random.randrange(1, 5*max_fps, 1) == 1 and event_active == -1:
-            event_classes = [birb(1700, Player.y), ninja(Player.y-18), bandit()]
+            event_classes = [birb(1700, Player.y), ninja(500), bandit()]
             event_active = random.randrange(0, len(event_classes), 1)
             event_object.append(event_classes[event_active])
 
