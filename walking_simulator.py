@@ -140,8 +140,8 @@ class bandit:
     def __init__(self):
         self.x = 1550
         self.y = 0
-        self.width = 30
-        self.height = 50
+        self.width = 36
+        self.height = 60
         self.hitbox = (self.x, self.y, self.width, self.height)
         self.frame = 0
         self.sprites = [pygame.image.load("./images/bandit_event/bandit1.png").convert_alpha(),
