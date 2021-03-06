@@ -665,7 +665,7 @@ while True:
         # voor random events
         if random.randrange(1, 5*max_fps, 1) == 1 and event_active == -1:
             event_classes = [birb(1700, Player.y), ninja(500), bandit()]
-            event_active = random.randrange(2, len(event_classes))
+            event_active = random.randrange(0, len(event_classes), 1)
             event_object.append(event_classes[event_active])
 
     # als je het hebt gehaald
