@@ -27,6 +27,8 @@ event_object = []
 event_active = -1
 event_frame = 0
 
+bullets = []
+
 # maakt een scherm met de resolutie width en height
 screen = pygame.display.set_mode(size)
 
@@ -63,6 +65,9 @@ class character:
                         pygame.image.load("./images/player/walk2.png").convert_alpha(),
                         pygame.image.load("./images/player/walk3.png").convert_alpha(),
                         pygame.image.load("./images/player/walk4.png").convert_alpha()]
+        self.event_sprites =    [pygame.image.load("./images/player/player_shield.png").convert_alpha(),
+                                 pygame.image.load("./images/player/player_pjew1.png").convert_alpha(),
+                                 pygame.image.load("./images/player/player_pjew2.png").convert_alpha()]
 
     # maakt een functie om alle sprites goed te maken
     def load_sprites(self):
@@ -72,6 +77,9 @@ class character:
 
             # maakt de flipped versies van de elke sprite
             self.sprites.append(pygame.transform.flip(self.sprites[i], True, False))
+
+        for i in range(0, 3):
+            self.event_sprites[i] = pygame.transform.scale(self.event_sprites[i], (self.width*2, self.height))
 
 # maakt classes voor de maps
 class desert:
@@ -156,13 +164,20 @@ class bandit:
                         pygame.image.load("./images/bandit_event/bandit10.png").convert_alpha()
                         ]
 
+# class voor bullets
 class bullet:
-    def __init__(self, x_val, y_val, side_mult):
+    def __init__(self, x_val, y_val, side_multiplier):
         self.x = x_val
         self.y = y_val
-        self.x_movement = 50
-        self.side = side_mult
-        self.sprite = pygame.image.load("./images/bandit_event/bullet.png")
+        self.x_movement = 160
+        self.side = side_multiplier
+        self.sprite = pygame.image.load("./images/bandit_event/bullet.png").convert_alpha()
+
+    # zorgt ervoor dat de bullets bewegen en een texture krijgen
+    def check_bullet(self):
+        self.x += self.x_movement * self.side
+        self.sprite = pygame.transform.scale(self.sprite, (45, 45))
+        screen.blit(self.sprite, (self.x, self.y))
 
 # COLLISION
 # checkt of de player collide met de y-waarde van de grond
@@ -342,11 +357,14 @@ def display_player(player, frame):
         screen.blit(player.sprites[0], (player.x-player.width/2, player.y))
 
     if player.shielding:
+        # makes a surface for the shield
         shield_surface = pygame.Surface((50,50), pygame.SRCALPHA, 32)
         pygame.draw.circle(shield_surface, (0, 64, 255), (25,25), 25, 3)
         pygame.draw.circle(shield_surface, (0, 128, 255, 128), (25,25), 24)
 
+        # maakt de player shield animatie
         player_center = (int(player.x + player.width / 2), int(player.y + player.height / 2))
+        screen.blit(player.event_sprites[0], (player.x-player.width/2, player.y))
         screen.blit(shield_surface, (player_center[0]-25, player_center[1]-25))
 
 
@@ -566,6 +584,8 @@ def check_bandit(player, objects, keymod):
     # als de player links van de bandit zit en de player heeft niet teruggeschoten gaat ie dood
     elif frame >= 7 and player.x < bandit.x:
         player.alive = False
+        if len(bullets) < 1:
+            bullets.append(bullet(bandit.x, bandit.y, -1))
 
     # objects[0] word weer veranderd
     objects[0] = bandit
@@ -635,8 +655,25 @@ while True:
     # zorgt voor de 4 frames die loopen
     sprite_frame = int(Player.run_frame) // 5 % 4
 
+    # voor elke bullet
+    for this_bullet in bullets:
+        # verplaatst en displayt de bullet
+        this_bullet.check_bullet()
+
+        # als de bullet van het scherm af is verwijderd die hem
+        if -20 > this_bullet.x > screen_width+20:
+            bullets.remove(this_bullet)
+
+    # als de player schiet spawnt er een bullet voor hem
+    if Player.shoot:
+        bullets.append(bullet(Player.x+Player.width, Player.y, 1))
+
+    # voor elke event
     if event_active != -1:
+        # add 1 bij de frames van elk event object
         event_object[0].frame += 1
+
+        # runt daarna de goede functie voor elke event
         if event_active == 0:
             event_object, Player, kill_object = check_birb(Player, event_object)
         elif event_active == 1:
@@ -664,7 +701,7 @@ while True:
 
         # voor random events
         if random.randrange(1, 5*max_fps, 1) == 1 and event_active == -1:
-            event_classes = [birb(1700, Player.y), ninja(500), bandit()]
+            event_classes = [birb(1700, Player.y), ninja(Player.y-18), bandit()]
             event_active = random.randrange(0, len(event_classes), 1)
             event_object.append(event_classes[event_active])
 
