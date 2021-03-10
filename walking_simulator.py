@@ -159,9 +159,9 @@ class ninja_star:
 
 # class voor de bandiet
 class bandit:
-    def __init__(self):
+    def __init__(self, y_val):
         self.x = 1550
-        self.y = 0
+        self.y = y_val
         self.width = 36
         self.height = 60
         self.hitbox = (self.x, self.y, self.width, self.height)
@@ -524,7 +524,7 @@ def check_birb(player, birb):
 # functie voor ninja event
 def check_ninja(player, objects, keys):
     # berekent de y-movement van de ninja ster
-    new_star_rotation = -(abs(objects[0].y - player.y)/abs(objects[0].x - player.x)) * 15 - 1.5
+    new_star_rotation = ((objects[0].y - player.y)/(objects[0].x - player.x)) * 15 - 1.5
     object_numb = 1
 
     # maakt een variabele voor de ninja zodat ik er makkelijker bij kan
@@ -589,8 +589,7 @@ def check_bandit(player, objects, keymod):
     # maakt een tijdelijk variabele om hem makkelijker te accessen
     bandit = objects[0]
 
-    # veranderd de plek van bandit
-    bandit.y = player.y-8
+    # veranderd de jitbox van bandit
     bandit.hitbox = (bandit.x, bandit.y, bandit.width, bandit.height)
 
     # maakt een frame counter per 10 frames
@@ -647,7 +646,7 @@ while True:
                 # herlaad alle dingen
                 Ground = map_list[random.randrange(0, len(map_list), 1)]
                 Ground.bg = pygame.transform.scale(Ground.bg, (screen_width, screen_height))
-                Player = character(Ground.max_height-50)
+                Player = character(Ground.hitbox[0][1]-50)
                 Player.load_sprites()
                 all_confetti = []
                 event_object = []
@@ -727,7 +726,7 @@ while True:
 
         # voor random events
         if random.randrange(1, 5*max_fps, 1) == 1 and event_active == -1:
-            event_classes = [birb(1700, Player.y), ninja(Ground.max_height-200), bandit()]
+            event_classes = [birb(1700, Player.y), ninja(Ground.hitbox[len(Ground.hitbox)-1][1]-250), bandit(Ground.hitbox[len(Ground.hitbox)-1][1]-40)]
             event_active = random.randrange(0, len(event_classes), 1)
             event_object.append(event_classes[event_active])
 
