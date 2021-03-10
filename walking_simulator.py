@@ -56,11 +56,12 @@ class character:
         self.height = 42
         self.hitbox = (self.x, self.y, self.width, self.height)
         self.run_frame = 0
-        self.run_speed = 10  # normaal is 10
+        self.run_speed = 1000  # normaal is 10
         self.jump_height = 16
         self.alive = True
         self.gun_cooldown = 120
         self.shoot = False
+        self.stand_still = 0
         self.sprites = [pygame.image.load("./images/player/walk1.png").convert_alpha(),
                         pygame.image.load("./images/player/walk2.png").convert_alpha(),
                         pygame.image.load("./images/player/walk3.png").convert_alpha(),
@@ -84,8 +85,21 @@ class character:
 # maakt classes voor de maps
 class desert:
     max_height = 770
-    hitbox = [(0, 770, screen_width, 130)]
+    hitbox = [(0, 770, screen_width, 50)]
     bg = pygame.image.load("./images/map_bgs/desert.png").convert()
+    bg = pygame.transform.scale(bg, (screen_width, screen_height))
+
+class mountain:
+    max_height = 290
+    hitbox = [(0, 290, 150, 80), (150, 350, 100, 50), (250, 380, 90, 50),
+              (340, 410, 90, 50), (430, 430, 30, 50), (460, 460, 10, 50),
+              (470, 490, 30, 50), (500, 510, 10, 50), (510, 530, 30, 50),
+              (540, 540, 40, 50), (580, 560, 60, 50), (640, 570, 40, 50),
+              (680, 590, 50, 50), (730, 620, 20, 50), (750, 660, 30, 50),
+              (780, 670, 10, 50), (790, 680, 240, 50), (1030, 670, 20, 50),
+              (1050, 660, 40, 50), (1090, 640, 50, 50), (1140, 630, 50, 50),
+              (1190, 600, 70, 50), (1260, 590, 90, 50), (1350, 570, 250, 50)]
+    bg = pygame.image.load("./images/map_bgs/Diagram.png").convert()
     bg = pygame.transform.scale(bg, (screen_width, screen_height))
 
 # maakt de class voor confetti :)
@@ -205,7 +219,7 @@ def ground_col_x(hitbox_a, hitbox_b):
 
         # als het verschil kleiner is dan de afstand vanaf het middelpunt
         #  tot de muur van beide dan weet je dat ze colliden
-        if abs(difference) < (i[2]/2)+(hitbox_a[2]/2) and hitbox_a[1] > i[1]:
+        if abs(difference) < (i[2]/2)+(hitbox_a[2]/2) and hitbox_a[1]+hitbox_a[3] > i[1]:
             # difference/abs(difference) geeft ook terug aan welke kan t van de muur de player zit, returnt dan -1 of 1
             return True, difference/abs(difference)
     # als niks collide retur false
@@ -315,17 +329,19 @@ def move_player(player, ground, framerate):
     player.y -= player.y_movement
 
     # checkt of de speler ctrl indrukt om te schieten
-    if 63 < keymod < 67 and player.gun_cooldown >= 120 and not player.shielding:
+    if 63 < keymod < 67 and player.gun_cooldown >= 60 and player.stand_still == 0 and not player.shielding:
         player.shoot = True
-        player.gun_cooldown = 0
+        player.gun_cooldown -= 60
+        player.stand_still = 18
     # als de gun cooldown kleiner is dan 120 blijft die de gun_cooldown erbij doen zodat je later weer kan schieten
     elif player.gun_cooldown < 120:
-        player.gun_cooldown += 1
+        player.gun_cooldown += .5
         player.shoot = False
 
     # voor de eerste 18 frames van de cooldown sta je stil
-    if player.gun_cooldown < 18:
+    if player.stand_still > 0:
         player.x_movement = 0
+        player.stand_still -= 1
 
 
     # de progress word berekent door de functie movement()
@@ -359,7 +375,7 @@ def display_player(player, frame):
     elif player.x_movement < 0:
         screen.blit(player.sprites[frame+4], (player.hitbox[0]-player.hitbox[2]/2, player.hitbox[1]))
     # voor de startpositie heb je geen movement dus moest deze nog toevoegen
-    elif player.gun_cooldown >= 17:
+    elif player.stand_still == 0:
         screen.blit(player.sprites[0], (player.x-player.width/2, player.y))
 
     if player.shielding:
@@ -372,8 +388,8 @@ def display_player(player, frame):
         player_center = (int(player.x + player.width / 2), int(player.y + player.height / 2))
         screen.blit(player.event_sprites[0], (player.x-player.width/2, player.y))
         screen.blit(shield_surface, (player_center[0]-25, player_center[1]-25))
-    elif player.gun_cooldown < 18:
-        frame = player.gun_cooldown // 12
+    elif player.stand_still > 0:
+        frame = player.stand_still // 12
         screen.blit(player.event_sprites[frame+1], (player.x-7, player.y))
 
 
@@ -428,6 +444,7 @@ def display_gun(player):
 
     # maakt nog een kleine outline om de meter mooier eruit te laten zien
     pygame.draw.rect(screen, black, (50, 100, meter_width, 20), 2)
+    pygame.draw.line(screen, black, (150, 100), (150, 120), 2)
 
 
 # END SCREEN
@@ -603,7 +620,7 @@ def check_bandit(player, objects, keymod):
     return objects, player, kill_object
 
 # zorgt ervoor dat alles werkt en geladen word
-map_list = [desert()]
+map_list = [desert(), mountain()]
 Ground = map_list[random.randrange(0, len(map_list), 1)]
 Player = character(Ground.max_height-50)
 Player.load_sprites()
@@ -710,7 +727,7 @@ while True:
 
         # voor random events
         if random.randrange(1, 5*max_fps, 1) == 1 and event_active == -1:
-            event_classes = [birb(1700, Player.y), ninja(500), bandit()]
+            event_classes = [birb(1700, Player.y), ninja(Ground.max_height-200), bandit()]
             event_active = random.randrange(0, len(event_classes), 1)
             event_object.append(event_classes[event_active])
 
