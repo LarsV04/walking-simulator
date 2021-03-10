@@ -99,7 +99,7 @@ class mountain:
               (780, 670, 10, 50), (790, 680, 240, 50), (1030, 670, 20, 50),
               (1050, 660, 40, 50), (1090, 640, 50, 50), (1140, 630, 50, 50),
               (1190, 600, 70, 50), (1260, 590, 90, 50), (1350, 570, 250, 50)]
-    bg = pygame.image.load("./images/map_bgs/Diagram.png").convert()
+    bg = pygame.image.load("./images/map_bgs/mountain.png").convert()
     bg = pygame.transform.scale(bg, (screen_width, screen_height))
 
 # maakt de class voor confetti :)
