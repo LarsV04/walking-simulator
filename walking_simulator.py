@@ -132,7 +132,7 @@ class ninja:
         self.y = min_y
         self.width = 40
         self.height = 60
-        self.frame = -10
+        self.frame = -100
         self.hitbox = (self.x, self.y, self.width, self.height)
         self.sprites = [pygame.image.load("./images/ninja_event/ninja1.png").convert_alpha(),
                         pygame.image.load("./images/ninja_event/ninja2.png").convert_alpha(),
@@ -143,6 +143,7 @@ class ninja:
                         pygame.image.load("./images/ninja_event/ninja7.png").convert_alpha(),
                         pygame.image.load("./images/ninja_event/ninja8.png").convert_alpha(),
                         pygame.image.load("./images/ninja_event/ninja8.png").convert_alpha()]
+        self.smoke = pygame.image.load("./images/ninja_event/smoke.png").convert_alpha()
 
 # class voor de sterren die de ninja gooit gooit
 class ninja_star:
@@ -366,7 +367,7 @@ def display_hitboxes(ground):
 # Laat de player zien op het scherm
 def display_player(player, frame):
     # maakt een hitbox rectangle voor testen
-    pygame.draw.rect(screen, green, player.hitbox, 1)
+    # pygame.draw.rect(screen, green, player.hitbox, 1)
 
     # kiest de goede sprite voor als die naar links of rechts gaat
     if player.x_movement > 0:
@@ -571,9 +572,16 @@ def check_ninja(player, objects, keys):
                 off_screen = True
 
     # zorgt ervoor dat de frames van de ninja goed getekend worden
-    if frame < 8:
+    if frame < 0:
+        this_ninja.smoke.set_alpha((abs(frame)/10)*255)
+    elif frame < 8:
         this_ninja.sprites[frame] = pygame.transform.scale(this_ninja.sprites[frame], (this_ninja.width, this_ninja.height))
         screen.blit(this_ninja.sprites[frame], (this_ninja.x, this_ninja.y))
+    elif frame < 18:
+        this_ninja.smoke.set_alpha(int(((frame-8)/10)*255))
+
+    this_ninja.smoke = pygame.transform.scale(this_ninja.smoke, (70, 70))
+    screen.blit(this_ninja.smoke, (this_ninja.x-15, this_ninja.y))
 
     # zet de aangepaste ninja terug naar de object lijst
     objects[0] = this_ninja
