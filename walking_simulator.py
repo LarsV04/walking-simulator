@@ -168,7 +168,7 @@ class ninja:
         self.y = min_y
         self.width = 40
         self.height = 60
-        self.frame = -88
+        self.frame = -66
         self.hitbox = (self.x, self.y, self.width, self.height)
         self.sprites = [pygame.image.load("./images/ninja_event/ninja1.png").convert_alpha(),
                         pygame.image.load("./images/ninja_event/ninja2.png").convert_alpha(),
@@ -568,7 +568,7 @@ def check_ninja(player, objects, keys):
     this_ninja = objects[0]
 
     # maakt een frame counter
-    frame = int(this_ninja.frame/8)
+    frame = int(this_ninja.frame/6)
 
     # maakt 15 ninja sterren
     while len(objects) < 16 and frame > 5:
