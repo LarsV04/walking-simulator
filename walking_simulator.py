@@ -84,13 +84,13 @@ class character:
 
 # maakt classes voor de maps
 class desert:
-    max_height = 770
+    spawn_height = 770
     hitbox = [(0, 770, screen_width, 50)]
     bg = pygame.image.load("./images/map_bgs/desert.png").convert()
     bg = pygame.transform.scale(bg, (screen_width, screen_height))
 
 class mountain:
-    max_height = 290
+    spawn_height  = 570
     hitbox = [(0, 290, 150, 80), (150, 350, 100, 50), (250, 380, 90, 50),
               (340, 410, 90, 50), (430, 430, 30, 50), (460, 460, 10, 50),
               (470, 490, 30, 50), (500, 510, 10, 50), (510, 530, 30, 50),
@@ -100,6 +100,42 @@ class mountain:
               (1050, 660, 40, 50), (1090, 640, 50, 50), (1140, 630, 50, 50),
               (1190, 600, 70, 50), (1260, 590, 90, 50), (1350, 570, 250, 50)]
     bg = pygame.image.load("./images/map_bgs/mountain.png").convert()
+    bg = pygame.transform.scale(bg, (screen_width, screen_height))
+
+class tabletop:
+    spawn_height = 570
+    hitbox = [(0, 570, 410, 100), (410, 520, 30, 70), (440, 490, 70, 50),
+              (510, 450, 90, 50), (600, 470, 100, 60), (700, 450, 50, 70),
+              (750, 500, 60, 50), (810, 530, 30, 60), (840, 570, 190, 100),
+              (1030, 530, 170, 60), (1200, 570, 160, 100), (1360, 530, 20, 60),
+              (1380, 500, 60, 50), (1440, 530, 10, 60), (1450, 570, 150, 100)]
+    bg = pygame.image.load("./images/map_bgs/tabletop.png").convert()
+    bg = pygame.transform.scale(bg, (screen_width, screen_height))
+
+class crystal:
+    spawn_height = 630
+    hitbox = [(0, 690, 30, 30), (30, 680, 40, 30), (70, 670, 40, 30),
+              (110, 660, 40, 30), (150, 650, 40, 30), (190, 640, 40, 30),
+              (230, 630, 40, 30), (270, 620, 40, 30), (310, 610, 40, 30),
+              (350, 600, 40, 30), (390, 590, 40, 30), (430, 600, 20, 30),
+              (450, 610, 20, 30), (470, 620, 20, 30), (490, 630, 20, 30),
+              (510, 640, 20, 30), (530, 650, 20, 30), (550, 660, 20, 30),
+              (570, 670, 20, 30), (590, 680, 20, 30), (610, 690, 20, 30),
+              (630, 700, 20, 30), (650, 710, 20, 30), (670, 720, 20, 30),
+              (690, 730, 20, 30), (710, 740, 20, 30), (730, 730, 20, 30),
+              (750, 720, 20, 30), (770, 710, 20, 30), (790, 700, 20, 30),
+              (810, 690, 20, 30), (830, 680, 20, 30), (850, 670, 20, 30),
+              (870, 660, 20, 30), (890, 650, 20, 30), (910, 640, 20, 30),
+              (930, 630, 50, 30), (980, 620, 50, 30), (1030, 610, 50, 30),
+              (1080, 600, 50, 30), (1130, 590, 50, 30), (1180, 580, 50, 30),
+              (1230, 570, 50, 30), (1280, 560, 50, 30), (1330, 550, 50, 30),
+              (1380, 540, 50, 30), (1430, 530, 30, 30), (1460, 540, 10, 30),
+              (1470, 550, 10, 30), (1480, 560, 10, 30), (1490, 570, 10, 30),
+              (1500, 580, 10, 30), (1510, 590, 10, 30), (1520, 600, 10, 30),
+              (1530, 610, 10, 30), (1540, 620, 10, 30), (1550, 630, 10, 30),
+              (1560, 640, 10, 30), (1570, 650, 10, 30), (1580, 660, 10, 30),
+              (1590, 670, 10, 30)]
+    bg = pygame.image.load("./images/map_bgs/crystal.png").convert()
     bg = pygame.transform.scale(bg, (screen_width, screen_height))
 
 # maakt de class voor confetti :)
@@ -132,7 +168,7 @@ class ninja:
         self.y = min_y
         self.width = 40
         self.height = 60
-        self.frame = -100
+        self.frame = -88
         self.hitbox = (self.x, self.y, self.width, self.height)
         self.sprites = [pygame.image.load("./images/ninja_event/ninja1.png").convert_alpha(),
                         pygame.image.load("./images/ninja_event/ninja2.png").convert_alpha(),
@@ -532,7 +568,7 @@ def check_ninja(player, objects, keys):
     this_ninja = objects[0]
 
     # maakt een frame counter
-    frame = int(this_ninja.frame/10)
+    frame = int(this_ninja.frame/8)
 
     # maakt 15 ninja sterren
     while len(objects) < 16 and frame > 5:
@@ -573,7 +609,7 @@ def check_ninja(player, objects, keys):
 
     # zorgt ervoor dat de frames van de ninja goed getekend worden
     if frame < 0:
-        this_ninja.smoke.set_alpha((abs(frame)/10)*255)
+        this_ninja.smoke.set_alpha((abs(frame+1)/10)*255)
     elif frame < 8:
         this_ninja.sprites[frame] = pygame.transform.scale(this_ninja.sprites[frame], (this_ninja.width, this_ninja.height))
         screen.blit(this_ninja.sprites[frame], (this_ninja.x, this_ninja.y))
@@ -627,9 +663,9 @@ def check_bandit(player, objects, keymod):
     return objects, player, kill_object
 
 # zorgt ervoor dat alles werkt en geladen word
-map_list = [desert(), mountain()]
+map_list = [desert(), mountain(), tabletop(), crystal()]
 Ground = map_list[random.randrange(0, len(map_list), 1)]
-Player = character(Ground.max_height-50)
+Player = character(Ground.hitbox[0][1]-50)
 Player.load_sprites()
 
 # voor altijd
@@ -734,7 +770,7 @@ while True:
 
         # voor random events
         if random.randrange(1, 5*max_fps, 1) == 1 and event_active == -1:
-            event_classes = [birb(1700, Player.y), ninja(Ground.hitbox[len(Ground.hitbox)-1][1]-250), bandit(Ground.hitbox[len(Ground.hitbox)-1][1]-40)]
+            event_classes = [birb(1700, Player.y), ninja(Ground.spawn_height-250), bandit(Ground.spawn_height-40)]
             event_active = random.randrange(0, len(event_classes), 1)
             event_object.append(event_classes[event_active])
 
