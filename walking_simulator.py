@@ -25,7 +25,6 @@ fps = 0
 # variabelen voor random events
 event_object = []
 event_active = -1
-event_frame = 0
 
 bullets = []
 
@@ -181,6 +180,19 @@ class ninja:
                         pygame.image.load("./images/ninja_event/ninja8.png").convert_alpha()]
         self.smoke = pygame.image.load("./images/ninja_event/smoke.png").convert_alpha()
 
+    def spawn_smoke(self, alpha):
+        # zorgt voor de alpha
+        self.smoke.set_alpha(alpha)
+
+        # scaled de smoke
+        self.smoke = pygame.transform.scale(self.smoke, (34, 34))
+
+        # plaatst smoke op de goede plekken
+        screen.blit(self.smoke, (self.x-6, self.y+5))
+        screen.blit(self.smoke, (self.x-6, self.y+32))
+        screen.blit(self.smoke, (self.x+5, self.y+18))
+
+
 # class voor de sterren die de ninja gooit gooit
 class ninja_star:
     def __init__(self, x_val, y_val, move_y):
@@ -235,6 +247,7 @@ class bullet:
 def ground_col_y(hitbox_a, hitbox_b):
     # voor elke ground hitbox
     for i in hitbox_b:
+        # als de player tussen de grondhitboxes zit
         if hitbox_a[0]+hitbox_a[2] > i[0] and hitbox_a[0] < i[0]+i[2]:
             # berekent het verschil van de het y-midden van de speler en van het object
             difference = i[1]-(hitbox_a[1]+hitbox_a[3])
@@ -448,7 +461,7 @@ def display_sprint(max_sprint, sprint_now):
     # maakt nog een kleine outline om de meter mooier eruit te laten zien
     pygame.draw.rect(screen, black, (50, 40, meter_width, 20), 2)
 
-# laat zien hoeveel je kan sprinten
+# laat zien hoelang je nog een shield hebt
 def display_shield(shield_now):
     # zorgt ervoor dat die een waarde heeft vn hoever de meter gevuld is en de width van de meter
     fill_meter = shield_now/60
@@ -465,7 +478,7 @@ def display_shield(shield_now):
     # maakt nog een kleine outline om de meter mooier eruit te laten zien
     pygame.draw.rect(screen, black, (50, 70, meter_width, 20), 2)
 
-
+# laat het aantal schoten van de player zien
 def display_gun(player):
     # zorgt ervoor dat die een waarde heeft vn hoever de meter gevuld is en de width van de meter
     fill_meter = player.gun_cooldown/120
@@ -609,15 +622,12 @@ def check_ninja(player, objects, keys):
 
     # zorgt ervoor dat de frames van de ninja goed getekend worden
     if frame < 0:
-        this_ninja.smoke.set_alpha((abs(frame+1)/10)*255)
+        this_ninja.spawn_smoke((abs(frame+1)/10)*255)
     elif frame < 8:
         this_ninja.sprites[frame] = pygame.transform.scale(this_ninja.sprites[frame], (this_ninja.width, this_ninja.height))
         screen.blit(this_ninja.sprites[frame], (this_ninja.x, this_ninja.y))
     elif frame < 18:
-        this_ninja.smoke.set_alpha(int(((frame-8)/10)*255))
-
-    this_ninja.smoke = pygame.transform.scale(this_ninja.smoke, (70, 70))
-    screen.blit(this_ninja.smoke, (this_ninja.x-15, this_ninja.y))
+        this_ninja.spawn_smoke(((frame-8)/10)*255)
 
     # zet de aangepaste ninja terug naar de object lijst
     objects[0] = this_ninja
@@ -662,9 +672,13 @@ def check_bandit(player, objects, keymod):
     # returnt de waardes
     return objects, player, kill_object
 
-# zorgt ervoor dat alles werkt en geladen word
+# maakt de lijst met maps
 map_list = [desert(), mountain(), tabletop(), crystal()]
+
+# kiest een random map uit die lijst
 Ground = map_list[random.randrange(0, len(map_list), 1)]
+
+# laad de player en de sprites en vergroot alle sprites uiteindelijk
 Player = character(Ground.hitbox[0][1]-50)
 Player.load_sprites()
 
@@ -695,7 +709,6 @@ while True:
                 all_confetti = []
                 event_object = []
                 event_active = -1
-                event_frame = 0
             elif 450 < mouse[1] < 550 and 850 < mouse[0] < 1050:
                 # quit de game
                 pygame.quit()
@@ -703,8 +716,9 @@ while True:
 
     # zorgt voor 60 fps en zorgt voor een frame counter
     msElapsed = clock.tick(60)
+
+    # program frame counter
     program_frame += 1
-    event_frame += 1
 
     # maakt de achtergrond het goede plaatje
     screen.blit(Ground.bg, (0, 0))
